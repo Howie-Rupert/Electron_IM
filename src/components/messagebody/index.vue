@@ -67,6 +67,7 @@
             <a
               v-if="item.message_type == 4"
               :href="item.message"
+              @click.prevent="download(item.message, $event)"
               download="download"
             >
               <div class="content-file" title="点击下载">
@@ -146,6 +147,7 @@
               v-if="item.message_type == 4"
               :href="item.message"
               download="download"
+              @click.prevent="download(item.message, $event)"
             >
               <div
                 :class="
@@ -593,6 +595,27 @@ export default {
         };
         this.websocketsend(JSON.stringify(data));
       }
+    },
+    download(url, event) {
+      event.preventDefault();
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.responseType = "blob";
+      xhr.onload = function () {
+        if (this.status === 200) {
+          const blob = new Blob([this.response], {
+            type: xhr.getResponseHeader("Content-Type"),
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = url.substring(url.lastIndexOf("/") + 1);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      };
+      xhr.send();
     },
     changeGroupInfo() {
       console.log(this.otherUserInfo.nickname);
